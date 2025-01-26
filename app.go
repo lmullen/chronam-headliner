@@ -49,18 +49,8 @@ func NewApp(ctx context.Context) *App {
 
 func (a *App) Run() error {
 
-	req, err := a.AIClient.ConstructAIRequest()
-	if err != nil {
-		slog.Error("Failed to construct request", "error", err)
-		panic(err)
-	}
-	err = a.AIClient.RunPrompt(req)
-	if err != nil {
-		slog.Error("error making request", "error", err)
-	}
-
 	slog.Info("starting the server", "address", "http://"+a.Config.Address)
-	err = a.Server.ListenAndServe()
+	err := a.Server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		return nil
 	}
