@@ -14,41 +14,42 @@ type Config struct {
 	Address string // The address at which this will be hosted, e.g.: localhost:8090
 }
 
-// The Server type shares access to resources.
-type Server struct {
+// The App type shares access to resources.
+type App struct {
 	Server *http.Server
 	Config Config
 	Router *mux.Router
+	// Client *AIClient
 }
 
-func NewServer(ctx context.Context) *Server {
-	s := Server{}
+func NewApp(ctx context.Context) *App {
+	a := App{}
 
-	// Read the configuration from environment variables. The `getEnv()` function
-	// will provide a default.
-	s.Config.Address = "0.0.0.0" + ":" + "8050"
+	a.Config.Address = "0.0.0.0" + ":" + "8050"
 
 	// Create the router, store it in the struct, initialize the routes, and
 	// register the middleware.
 	router := mux.NewRouter()
-	s.Router = router
-	s.Routes()
+	a.Router = router
+	a.Routes()
 	// s.Middleware()
 
-	s.Server = &http.Server{
-		Addr:         s.Config.Address,
+	a.Server = &http.Server{
+		Addr:         a.Config.Address,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      s.Router,
+		Handler:      a.Router,
 	}
 
-	return &s
+	// a.Client = NewAIClient(ctx)
+
+	return &a
 }
 
-func (s *Server) Run() error {
-	slog.Info("starting the server", "address", "http://"+s.Config.Address)
-	err := s.Server.ListenAndServe()
+func (a *App) Run() error {
+	slog.Info("starting the server", "address", "http://"+a.Config.Address)
+	err := a.Server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		return nil
 	}
@@ -56,9 +57,9 @@ func (s *Server) Run() error {
 }
 
 // Shutdown closes the connection to the database and shutsdown the server.
-func (s *Server) Shutdown() {
+func (a *App) Shutdown() {
 	slog.Info("shutting down the web server")
-	err := s.Server.Shutdown(context.TODO())
+	err := a.Server.Shutdown(context.TODO())
 	if err != nil {
 		slog.Error("error shutting down web server", "error", err)
 	}

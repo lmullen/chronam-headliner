@@ -13,7 +13,7 @@ type ChronamPage struct {
 	RawText string `json:"raw_text"`
 }
 
-func (s *Server) ChronamUrlHandler() http.HandlerFunc {
+func (a *App) ChronamUrlHandler() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 

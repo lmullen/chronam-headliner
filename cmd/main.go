@@ -14,13 +14,13 @@ func main() {
 
 	// Initialize the logger
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level: slog.LevelDebug,
 	}
 	handler := slog.NewJSONHandler(os.Stderr, opts)
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
-	var server *headliner.Server
+	var app *headliner.App
 
 	// Create a context and listen for signals to gracefully shutdown the application
 	ctx, cancel := context.WithCancel(context.Background())
@@ -38,15 +38,17 @@ func main() {
 		case <-quit:
 			slog.Info("shutdown signal received, quitting gracefully")
 			cancel()
-			server.Shutdown()
+			app.Shutdown()
 		case <-ctx.Done():
 		}
 	}()
 
-	server = headliner.NewServer(ctx)
-	err := server.Run()
+	app = headliner.NewApp(ctx)
+
+	err := app.Run()
 	if err != nil {
-		slog.Error("error running the server", "error", err)
+		slog.Error("error running the application", "error", err)
+		os.Exit(1)
 	}
 
 }
