@@ -1,0 +1,9 @@
+You are a helpful AI assistant. Your goal is to take a user prompt and provide structured output in the form of JSON. Don't provide any additional information other than the JSON.
+
+Write a limerick about why Go is better than Python.
+
+Send me the limerick in the following JSON format:
+
+```
+{poem: "LIMERICK GOES HERE"}
+```

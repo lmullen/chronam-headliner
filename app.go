@@ -16,10 +16,10 @@ type Config struct {
 
 // The App type shares access to resources.
 type App struct {
-	Server *http.Server
-	Config Config
-	Router *mux.Router
-	// Client *AIClient
+	Server   *http.Server
+	Config   Config
+	Router   *mux.Router
+	AIClient *AIClient
 }
 
 func NewApp(ctx context.Context) *App {
@@ -42,14 +42,25 @@ func NewApp(ctx context.Context) *App {
 		Handler:      a.Router,
 	}
 
-	// a.Client = NewAIClient(ctx)
+	a.AIClient = NewAIClient(ctx)
 
 	return &a
 }
 
 func (a *App) Run() error {
+
+	req, err := a.AIClient.ConstructAIRequest()
+	if err != nil {
+		slog.Error("Failed to construct request", "error", err)
+		panic(err)
+	}
+	err = a.AIClient.RunPrompt(req)
+	if err != nil {
+		slog.Error("error making request", "error", err)
+	}
+
 	slog.Info("starting the server", "address", "http://"+a.Config.Address)
-	err := a.Server.ListenAndServe()
+	err = a.Server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		return nil
 	}
