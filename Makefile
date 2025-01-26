@@ -9,3 +9,8 @@ $(model) :
 .PHONY : run-llm
 run-llm : $(model)
 	./$(model) --server --v2
+
+# Run the app
+.PHONY : run-app
+run-app : 
+	go run cmd/main.go
