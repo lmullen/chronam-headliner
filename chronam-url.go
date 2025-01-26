@@ -9,8 +9,14 @@ import (
 )
 
 type ChronamPage struct {
-	URL     string `json:"url"`
-	RawText string `json:"raw_text"`
+	URL      string          `json:"url"`
+	RawText  string          `json:"raw_text"`
+	Articles ChronamArticles `json:"articles"`
+}
+
+type ChronamArticles []struct {
+	Headline string `json:"headline"`
+	Body     string `json:"body"`
 }
 
 func (a *App) ChronamUrlHandler() http.HandlerFunc {
@@ -38,12 +44,26 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 			return
 		}
 
-		slog.Info("received ChronAm URL", "url", page)
+		slog.Info("received ChronAm URL", "url", page.URL)
 
 		err := GetRawText(&page)
 		if err != nil {
 			slog.Error("unable to download OCR text", "error", err, "url", page.URL)
 		}
+
+		req, err := a.AIClient.ConstructAIRequest(&page)
+		if err != nil {
+			slog.Error("error contructing request for this page", "url", page.URL, "error", err)
+			return
+		}
+
+		err = a.AIClient.RunPrompt(req)
+		if err != nil {
+			slog.Error("error making request to model", "url", page.URL, "error", err)
+			return
+		}
+
+		fmt.Println(page.Articles)
 
 	}
 }

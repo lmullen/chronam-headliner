@@ -13,10 +13,14 @@ import (
 //go:embed ai-prompt.txt
 var embeddedPrompt string
 
+//go:embed ai-response-schema.json
+var embeddedSchema []byte
+
 var modelURL = "http://localhost:8080/v1/chat/completions"
 
 type AIClient struct {
 	client *http.Client
+	schema ResponseSchema
 }
 
 type AIMessage struct {
@@ -27,6 +31,28 @@ type AIMessage struct {
 type AIRequestBody struct {
 	Model    string      `json:"model"`
 	Messages []AIMessage `json:"messages"`
+	// ResponseFormat ResponseFormat `json:"response_format"`
+}
+
+type ResponseSchema struct {
+	Schema string `json:"$schema"`
+	Type   string `json:"type"`
+	Items  []struct {
+		Properties struct {
+			Headline struct {
+				Type string `json:"type"`
+			} `json:"headline"`
+			Body struct {
+				Type string `json:"type"`
+			} `json:"body"`
+		} `json:"properties"`
+		Required []string `json:"required"`
+	} `json:"items"`
+}
+
+type ResponseFormat struct {
+	Type       string         `json:"type"`
+	JSONSchema ResponseSchema `json:"json_schema"`
 }
 
 type ModelResponse struct {
@@ -53,20 +79,43 @@ type ModelResponse struct {
 
 func NewAIClient(ctx context.Context) *AIClient {
 	c := AIClient{}
-
 	c.client = &http.Client{}
 
-	return &c
+	// var schema ResponseSchema
+	// err := json.Unmarshal(embeddedSchema, &schema)
+	// if err != nil {
+	// 	slog.Error("failed to decode JSON Schema", "error", err)
+	// 	return nil
+	// }
+	// fmt.Println(string(embeddedSchema))
+	// fmt.Println(schema)
 
+	var schema ResponseSchema
+
+	if err := json.Unmarshal(embeddedSchema, &schema); err != nil {
+		fmt.Printf("Error unmarshalling: %v\n", err)
+		return nil
+	}
+
+	c.schema = schema
+
+	return &c
 }
 
-func (c *AIClient) ConstructAIRequest() (*http.Request, error) {
+func (c *AIClient) ConstructAIRequest(page *ChronamPage) (*http.Request, error) {
+
+	prompt := embeddedPrompt + "```\n" + page.RawText + "\n```"
+
 	reqBody := AIRequestBody{
 		Model: "LLaMA_CPP",
+		// ResponseFormat: ResponseFormat{
+		// 	Type:       "json_schema",
+		// 	JSONSchema: c.schema,
+		// },
 		Messages: []AIMessage{
 			{
 				Role:    "user",
-				Content: embeddedPrompt,
+				Content: prompt,
 			},
 		},
 	}
@@ -88,6 +137,7 @@ func (c *AIClient) ConstructAIRequest() (*http.Request, error) {
 }
 
 func (c *AIClient) RunPrompt(req *http.Request) error {
+	slog.Info("prompting the model for a response")
 	resp, err := c.client.Do(req)
 	if err != nil {
 		slog.Error("failed to send request", "error", err)
@@ -106,6 +156,8 @@ func (c *AIClient) RunPrompt(req *http.Request) error {
 		slog.Error("failed to decode response", "error", err)
 		return fmt.Errorf("decode response: %w", err)
 	}
+	fmt.Println(response)
+	fmt.Println(response.Choices[0].Message.Content)
 
 	return nil
 }

@@ -8,7 +8,8 @@ $(model) :
 # Run the model as a OpenAI compatible server
 .PHONY : run-llm
 run-llm : $(model)
-	./$(model) --server --v2
+# Setting context size to 0 allows maximum context allowed by the model itself
+	./$(model) --server --v2 --ctx-size 0
 
 # Run the app
 .PHONY : run-app
