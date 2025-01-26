@@ -29,9 +29,9 @@ type AIMessage struct {
 }
 
 type AIRequestBody struct {
-	Model    string      `json:"model"`
-	Messages []AIMessage `json:"messages"`
-	// ResponseFormat ResponseFormat `json:"response_format"`
+	Model          string         `json:"model"`
+	Messages       []AIMessage    `json:"messages"`
+	ResponseFormat ResponseFormat `json:"response_format"`
 }
 
 type ResponseSchema struct {
@@ -81,19 +81,10 @@ func NewAIClient(ctx context.Context) *AIClient {
 	c := AIClient{}
 	c.client = &http.Client{}
 
-	// var schema ResponseSchema
-	// err := json.Unmarshal(embeddedSchema, &schema)
-	// if err != nil {
-	// 	slog.Error("failed to decode JSON Schema", "error", err)
-	// 	return nil
-	// }
-	// fmt.Println(string(embeddedSchema))
-	// fmt.Println(schema)
-
 	var schema ResponseSchema
 
 	if err := json.Unmarshal(embeddedSchema, &schema); err != nil {
-		fmt.Printf("Error unmarshalling: %v\n", err)
+		fmt.Printf("Error unmarshalling schema: %v\n", err)
 		return nil
 	}
 
@@ -108,10 +99,10 @@ func (c *AIClient) ConstructAIRequest(page *ChronamPage) (*http.Request, error) 
 
 	reqBody := AIRequestBody{
 		Model: "LLaMA_CPP",
-		// ResponseFormat: ResponseFormat{
-		// 	Type:       "json_schema",
-		// 	JSONSchema: c.schema,
-		// },
+		ResponseFormat: ResponseFormat{
+			Type:       "json_schema",
+			JSONSchema: c.schema,
+		},
 		Messages: []AIMessage{
 			{
 				Role:    "user",
@@ -136,7 +127,7 @@ func (c *AIClient) ConstructAIRequest(page *ChronamPage) (*http.Request, error) 
 	return req, nil
 }
 
-func (c *AIClient) RunPrompt(req *http.Request) error {
+func (c *AIClient) RunPrompt(page *ChronamPage, req *http.Request) error {
 	slog.Info("prompting the model for a response")
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -156,8 +147,12 @@ func (c *AIClient) RunPrompt(req *http.Request) error {
 		slog.Error("failed to decode response", "error", err)
 		return fmt.Errorf("decode response: %w", err)
 	}
-	fmt.Println(response)
-	fmt.Println(response.Choices[0].Message.Content)
+
+	outputJSON := response.Choices[0].Message.Content
+	err = json.Unmarshal([]byte(outputJSON), &page.Articles)
+	if err != nil {
+		slog.Error("error unmarshalling articles", "error", err)
+	}
 
 	return nil
 }

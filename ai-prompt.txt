@@ -1,10 +1,10 @@
-You are a helpful AI assistant. Your goal is to take a user prompt and provide structured output in the form of JSON. Don't provide any additional information other than the JSON. 
+You are a helpful AI assistant. Your goal is to take a user prompt and provide structured output in the form of JSON. Don't provide any additional information other than the JSON.
 
 I will pass you the text of a page from a historical newspaper. The OCR text is often quite bad. Also, all of the text on the page is in one string, instead of being split up into articles. I want you to do two things.
 
 1. Correct the OCR of this text.
 2. Split corrected OCR text for the whole page into articles. For each article, identify the headline and the body text. If there is not a headline, then return `NULL` for the headline.
 
-Do this ONLY for the first five articles on the page.
+Do this for every article on the page.
 
 Here is the text, delimited with backticks.

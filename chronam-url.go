@@ -57,13 +57,17 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 			return
 		}
 
-		err = a.AIClient.RunPrompt(req)
+		err = a.AIClient.RunPrompt(&page, req)
 		if err != nil {
 			slog.Error("error making request to model", "url", page.URL, "error", err)
 			return
 		}
 
-		fmt.Println(page.Articles)
+		for i, art := range page.Articles {
+			fmt.Println("Count: ", i)
+			fmt.Println("Headline: ", art.Headline)
+			fmt.Println("Body: ", art.Body)
+		}
 
 	}
 }
