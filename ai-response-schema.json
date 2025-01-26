@@ -1,21 +1,17 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
 	"type": "array",
-	"items": [
-		{
-			"type": "object",
-			"properties": {
-				"headline": {
-					"type": "null"
-				},
-				"body": {
-					"type": "string"
-				}
+	"maxItems": 5,
+	"items": {
+		"type": "object",
+		"required": [ "headline", "body" ],
+		"properties": {
+			"headline": {
+				"type": "string"
 			},
-			"required": [
-				"headline",
-				"body"
-			]
+			"body": {
+				"type": "string"
+			}
 		}
-	]
+	}
 }

@@ -35,9 +35,12 @@ type AIRequestBody struct {
 }
 
 type ResponseSchema struct {
-	Schema string `json:"$schema"`
-	Type   string `json:"type"`
-	Items  []struct {
+	Schema   string `json:"$schema"`
+	Type     string `json:"type"`
+	MaxItems int    `json:"maxItems"`
+	Items    struct {
+		Type       string   `json:"type"`
+		Required   []string `json:"required"`
 		Properties struct {
 			Headline struct {
 				Type string `json:"type"`
@@ -46,7 +49,6 @@ type ResponseSchema struct {
 				Type string `json:"type"`
 			} `json:"body"`
 		} `json:"properties"`
-		Required []string `json:"required"`
 	} `json:"items"`
 }
 
@@ -77,7 +79,7 @@ type ModelResponse struct {
 	} `json:"usage"`
 }
 
-func NewAIClient(ctx context.Context) *AIClient {
+func NewAIClient(ctx context.Context) (*AIClient, error) {
 	c := AIClient{}
 	c.client = &http.Client{}
 
@@ -85,12 +87,12 @@ func NewAIClient(ctx context.Context) *AIClient {
 
 	if err := json.Unmarshal(embeddedSchema, &schema); err != nil {
 		fmt.Printf("Error unmarshalling schema: %v\n", err)
-		return nil
+		return nil, err
 	}
 
 	c.schema = schema
 
-	return &c
+	return &c, nil
 }
 
 func (c *AIClient) ConstructAIRequest(page *ChronamPage) (*http.Request, error) {

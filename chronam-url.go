@@ -66,7 +66,7 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 		for i, art := range page.Articles {
 			fmt.Println("Count: ", i)
 			fmt.Println("Headline: ", art.Headline)
-			fmt.Println("Body: ", art.Body)
+			// fmt.Println("Body: ", art.Body)
 		}
 
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -42,7 +43,11 @@ func NewApp(ctx context.Context) *App {
 		Handler:      a.Router,
 	}
 
-	a.AIClient = NewAIClient(ctx)
+	var err error
+	a.AIClient, err = NewAIClient(ctx)
+	if err != nil {
+		os.Exit(1)
+	}
 
 	return &a
 }
