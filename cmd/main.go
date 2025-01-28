@@ -6,12 +6,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	headliner "github.com/lmullen/chronam-headliner"
 )
 
 func main() {
-
 	// Initialize the logger
 	opts := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
@@ -20,35 +20,51 @@ func main() {
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
-	var app *headliner.App
-
 	// Create a context and listen for signals to gracefully shutdown the application
 	ctx, cancel := context.WithCancel(context.Background())
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	// Clean up function that will be called at program end no matter what
-	defer func() {
-		signal.Stop(quit)
-		cancel()
-	}()
+	defer cancel()
 
-	// Listen for shutdown signals in a go-routine and cancel context then
+	// Create the app first
+	app := headliner.NewApp(ctx)
+
+	// Set up signal handling after app creation
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(quit)
+
+	// Listen for shutdown signals in a go-routine
 	go func() {
 		select {
-		case <-quit:
-			slog.Info("shutdown signal received, quitting gracefully")
+		case sig := <-quit:
+			slog.Info("shutdown signal received, quitting gracefully", "signal", sig)
+
+			// Create a timeout context for shutdown
+			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer shutdownCancel()
+
+			done := make(chan struct{})
+			go func() {
+				app.Shutdown()
+				close(done)
+			}()
+
+			select {
+			case <-done:
+				slog.Info("clean shutdown completed")
+			case <-shutdownCtx.Done():
+				slog.Error("shutdown timed out, forcing exit")
+				os.Exit(1)
+			}
+
 			cancel()
-			app.Shutdown()
 		case <-ctx.Done():
+			slog.Info("context cancelled, shutting down signal handler")
 		}
 	}()
 
-	app = headliner.NewApp(ctx)
-
-	err := app.Run()
-	if err != nil {
+	// Run the application
+	if err := app.Run(); err != nil {
 		slog.Error("error running the application", "error", err)
 		os.Exit(1)
 	}
-
 }
