@@ -44,42 +44,41 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 			return
 		}
 
-		slog.Info("received ChronAm URL", "url", page.URL)
+		slog.Debug("received ChronAm URL", "url", page.URL)
 
 		err := GetRawText(&page)
 		if err != nil {
 			slog.Error("unable to download OCR text", "error", err, "url", page.URL)
 		}
 
-		req, err := a.AIClient.ConstructAIRequest(&page)
-		if err != nil {
-			slog.Error("error contructing request for this page", "url", page.URL, "error", err)
-			return
-		}
+		// req, err := a.AIClient.ConstructAIRequest(&page)
+		// if err != nil {
+		// 	slog.Error("error contructing request for this page", "url", page.URL, "error", err)
+		// 	return
+		// }
 
-		err = a.AIClient.RunPrompt(&page, req)
-		if err != nil {
-			slog.Error("error making request to model", "url", page.URL, "error", err)
-			return
-		}
+		// err = a.AIClient.RunPrompt(&page, req)
+		// if err != nil {
+		// 	slog.Error("error making request to model", "url", page.URL, "error", err)
+		// 	return
+		// }
 
-		for i, art := range page.Articles {
-			fmt.Println("Count: ", i)
-			fmt.Println("Headline: ", art.Headline)
-			// fmt.Println("Body: ", art.Body)
-		}
+		// for i, art := range page.Articles {
+		// 	fmt.Println("Count: ", i)
+		// 	fmt.Println("Headline: ", art.Headline)
+		// 	// fmt.Println("Body: ", art.Body)
+		// }
 
 	}
 }
 
 func GetRawText(page *ChronamPage) error {
-
 	downloadURL := page.URL + "ocr.txt"
-	slog.Info("downloading OCR text", "url", downloadURL)
+	slog.Debug("downloading OCR text", "url", downloadURL)
 
 	resp, err := http.Get(downloadURL)
 	if err != nil {
-		slog.Error("failed to download URL", "error", err)
+		slog.Error("failed to download URL", "url", downloadURL, "error", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -96,10 +95,9 @@ func GetRawText(page *ChronamPage) error {
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	slog.Info("download completed successfully", "bytes_read", len(body))
+	slog.Debug("download completed successfully", "url", downloadURL, "bytes_read", len(body))
 
 	page.RawText = string(body)
 
 	return nil
-
 }

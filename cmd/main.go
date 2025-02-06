@@ -38,7 +38,7 @@ func main() {
 	go func() {
 		select {
 		case sig := <-quit:
-			slog.Info("shutting down in response to signal", "signal", sig)
+			slog.Info("shutting down in response to signal", "signal", sig.String())
 
 			// Create a timeout context for shutdown
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
