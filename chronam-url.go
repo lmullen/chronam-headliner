@@ -51,6 +51,7 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 			slog.Error("unable to download OCR text", "error", err, "url", page.URL)
 		}
 
+		a.RunPrompt()
 		// req, err := a.AIClient.ConstructAIRequest(&page)
 		// if err != nil {
 		// 	slog.Error("error contructing request for this page", "url", page.URL, "error", err)

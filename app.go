@@ -17,14 +17,17 @@ type Config struct {
 
 // The App type shares access to resources.
 type App struct {
-	Server   *http.Server
-	Config   Config
-	Router   *mux.Router
-	AIClient *anthropic.Client
+	Server      *http.Server
+	Config      Config
+	Router      *mux.Router
+	AIClient    *anthropic.Client
+	ShutdownCtx context.Context
 }
 
 func NewApp(ctx context.Context) *App {
 	a := App{}
+
+	a.ShutdownCtx = ctx
 
 	a.Config.Address = "0.0.0.0" + ":" + "8050"
 
@@ -61,7 +64,7 @@ func (a *App) Run() error {
 // Shutdown closes the connection to the database and shutsdown the server.
 func (a *App) Shutdown() {
 	slog.Info("shutting down the web server")
-	err := a.Server.Shutdown(context.TODO())
+	err := a.Server.Shutdown(a.ShutdownCtx)
 	if err != nil {
 		slog.Error("error shutting down web server", "error", err)
 	}
