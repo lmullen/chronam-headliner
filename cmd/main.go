@@ -27,6 +27,8 @@ func main() {
 	// Create the app first
 	app := headliner.NewApp(ctx)
 
+	slog.Debug("starting the app")
+
 	// Set up signal handling after app creation
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -36,7 +38,7 @@ func main() {
 	go func() {
 		select {
 		case sig := <-quit:
-			slog.Info("shutdown signal received, quitting gracefully", "signal", sig)
+			slog.Info("shutting down in response to signal", "signal", sig)
 
 			// Create a timeout context for shutdown
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -50,7 +52,7 @@ func main() {
 
 			select {
 			case <-done:
-				slog.Info("clean shutdown completed")
+				slog.Info("shutdown completed cleanly")
 			case <-shutdownCtx.Done():
 				slog.Error("shutdown timed out, forcing exit")
 				os.Exit(1)
@@ -58,13 +60,13 @@ func main() {
 
 			cancel()
 		case <-ctx.Done():
-			slog.Info("context cancelled, shutting down signal handler")
+			slog.Debug("context cancelled, shutting down signal handler")
 		}
 	}()
 
 	// Run the application
 	if err := app.Run(); err != nil {
 		slog.Error("error running the application", "error", err)
-		os.Exit(1)
+		panic(nil)
 	}
 }

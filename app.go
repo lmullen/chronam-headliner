@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/gorilla/mux"
 )
 
@@ -20,7 +20,7 @@ type App struct {
 	Server   *http.Server
 	Config   Config
 	Router   *mux.Router
-	AIClient *AIClient
+	AIClient *anthropic.Client
 }
 
 func NewApp(ctx context.Context) *App {
@@ -43,18 +43,14 @@ func NewApp(ctx context.Context) *App {
 		Handler:      a.Router,
 	}
 
-	var err error
-	a.AIClient, err = NewAIClient(ctx)
-	if err != nil {
-		os.Exit(1)
-	}
+	a.AIClient = anthropic.NewClient()
 
 	return &a
 }
 
 func (a *App) Run() error {
 
-	slog.Info("starting the server", "address", "http://"+a.Config.Address)
+	slog.Info("starting the web server", "address", "http://"+a.Config.Address)
 	err := a.Server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		return nil
