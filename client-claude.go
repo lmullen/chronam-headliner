@@ -18,7 +18,7 @@ func (a *App) RunPrompt(page *ChronamPage) error {
 	}
 
 	message, err := a.AIClient.Messages.New(a.ShutdownCtx, anthropic.MessageNewParams{
-		Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
+		Model:     anthropic.F(anthropic.ModelClaude3_5HaikuLatest),
 		MaxTokens: anthropic.F(int64(8192)),
 		System: anthropic.F([]anthropic.TextBlockParam{
 			anthropic.NewTextBlock(promptSystem),
@@ -46,9 +46,9 @@ func (a *App) RunPrompt(page *ChronamPage) error {
 	return nil
 }
 
-// Price in dollars per token for Claude 3.5 Sonnet
-const inputPrice float64 = 3 / 1e6
-const outputPrice float64 = 15 / 1e6
+// Price in dollars per token for Claude 3.5 Haiku
+const inputPrice float64 = 0.80 / 1e6
+const outputPrice float64 = 4 / 1e6
 
 func calculateCost(u anthropic.Usage) float64 {
 	return float64(u.InputTokens)*inputPrice + float64(u.OutputTokens)*outputPrice
