@@ -1,13 +1,12 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
 	"type": "array",
-	"maxItems": 5,
 	"items": {
 		"type": "object",
 		"required": [ "headline", "body" ],
 		"properties": {
 			"headline": {
-				"type": "string"
+				"type": [ "string", "null" ]
 			},
 			"body": {
 				"type": "string"

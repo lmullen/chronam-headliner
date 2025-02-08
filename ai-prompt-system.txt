@@ -1,0 +1,1 @@
+You are being queried by a computer program, not directly by a human. Your responses must only come back as valid JSON using the JSON data structure provided to you. Do not return an additional commentary on the response. Return only the JSON.

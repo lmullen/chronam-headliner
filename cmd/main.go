@@ -25,7 +25,11 @@ func main() {
 	defer cancel()
 
 	// Create the app first
-	app := headliner.NewApp(ctx)
+	app, err := headliner.NewApp(ctx)
+	if err != nil {
+		slog.Error("error creating the app", "error", err)
+		panic(err)
+	}
 
 	slog.Info("starting the app")
 

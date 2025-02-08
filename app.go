@@ -2,6 +2,7 @@ package headliner
 
 import (
 	"context"
+	_ "embed"
 	"log/slog"
 	"net/http"
 	"time"
@@ -22,9 +23,10 @@ type App struct {
 	Router      *mux.Router
 	AIClient    *anthropic.Client
 	ShutdownCtx context.Context
+	MakePrompt  PromptMaker
 }
 
-func NewApp(ctx context.Context) *App {
+func NewApp(ctx context.Context) (*App, error) {
 	a := App{}
 
 	a.ShutdownCtx = ctx
@@ -48,7 +50,14 @@ func NewApp(ctx context.Context) *App {
 
 	a.AIClient = anthropic.NewClient()
 
-	return &a
+	p, err := MakePromptTemplate()
+	if err != nil {
+		slog.Error("error creating prompt template", "error", err)
+		return nil, err
+	}
+	a.MakePrompt = p
+
+	return &a, nil
 }
 
 func (a *App) Run() error {

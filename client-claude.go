@@ -7,9 +7,10 @@ import (
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
-type Response []int
+type ClaudeResponse []int
 
-func (a *App) RunPrompt() error {
+func (a *App) RunPrompt() (ClaudeResponse, error) {
+	var res ClaudeResponse
 
 	slog.Debug("sending prompt to Claude")
 	message, err := a.AIClient.Messages.New(a.ShutdownCtx, anthropic.MessageNewParams{
@@ -21,9 +22,9 @@ func (a *App) RunPrompt() error {
 	})
 	if err != nil {
 		slog.Error("failed sending prompt to Claude", "error", err)
-		return err
+		return nil, err
 	}
 	fmt.Printf("%+v\n", message.Content)
 
-	return nil
+	return res, nil
 }
