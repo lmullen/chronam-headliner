@@ -49,8 +49,13 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 		err = a.RunPrompt(&page)
 		if err != nil {
 			slog.Error("error running prompt with Claude", "error", err)
+			http.Error(w, "Unable to process that page", http.StatusInternalServerError)
+			return
 		}
 
+		// Return the JSON in response to the POST request
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(page)
 	}
 }
 
