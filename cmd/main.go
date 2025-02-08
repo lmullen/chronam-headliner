@@ -27,7 +27,7 @@ func main() {
 	// Create the app first
 	app := headliner.NewApp(ctx)
 
-	slog.Debug("starting the app")
+	slog.Info("starting the app")
 
 	// Set up signal handling after app creation
 	quit := make(chan os.Signal, 1)
@@ -67,6 +67,6 @@ func main() {
 	// Run the application
 	if err := app.Run(); err != nil {
 		slog.Error("error running the application", "error", err)
-		panic(nil)
+		panic(err)
 	}
 }

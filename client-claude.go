@@ -21,6 +21,7 @@ func (a *App) RunPrompt() error {
 	})
 	if err != nil {
 		slog.Error("failed sending prompt to Claude", "error", err)
+		return err
 	}
 	fmt.Printf("%+v\n", message.Content)
 
