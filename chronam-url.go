@@ -65,6 +65,7 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 
 		// Return the JSON in response to the POST request
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(page)
 	}
 }
