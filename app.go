@@ -42,8 +42,8 @@ func NewApp(ctx context.Context) (*App, error) {
 	// register the middleware.
 	router := mux.NewRouter()
 	a.Router = router
+	a.Middleware()
 	a.Routes()
-	// s.Middleware()
 
 	a.Server = &http.Server{
 		Addr:         a.Config.Address,
