@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -24,6 +25,7 @@ type App struct {
 	AIClient    *anthropic.Client
 	ShutdownCtx context.Context
 	MakePrompt  PromptMaker
+	Store       *sync.Map
 }
 
 func NewApp(ctx context.Context) (*App, error) {
@@ -32,6 +34,9 @@ func NewApp(ctx context.Context) (*App, error) {
 	a.ShutdownCtx = ctx
 
 	a.Config.Address = "0.0.0.0" + ":" + "8050"
+
+	var m sync.Map
+	a.Store = &m
 
 	// Create the router, store it in the struct, initialize the routes, and
 	// register the middleware.

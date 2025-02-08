@@ -41,16 +41,26 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 
 		slog.Debug("received ChronAm URL", "url", page.URL)
 
-		err := GetRawText(&page)
-		if err != nil {
-			slog.Error("unable to download OCR text", "error", err, "url", page.URL)
-		}
+		p, ok := a.Store.Load(page.URL)
+		if !ok {
+			slog.Debug("unable to find URL in cache", "url", page.URL)
 
-		err = a.RunPrompt(&page)
-		if err != nil {
-			slog.Error("error running prompt with Claude", "error", err)
-			http.Error(w, "Unable to process that page", http.StatusInternalServerError)
-			return
+			err := GetRawText(&page)
+			if err != nil {
+				slog.Error("unable to download OCR text", "error", err, "url", page.URL)
+			}
+
+			err = a.RunPrompt(&page)
+			if err != nil {
+				slog.Error("error running prompt with Claude", "error", err)
+				http.Error(w, "Unable to process that page", http.StatusInternalServerError)
+				return
+			}
+			// Prompt was successful so store results in cache
+			a.Store.Store(page.URL, page)
+		} else {
+			slog.Debug("found URL in cache", "url", page.URL)
+			page = p.(ChronamPage) // Update our working page object with data from cache
 		}
 
 		// Return the JSON in response to the POST request
