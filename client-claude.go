@@ -31,7 +31,8 @@ func (a *App) RunPrompt(page *ChronamPage) error {
 		slog.Debug("error response from claude", "claude", message)
 		return err
 	}
-	slog.Debug("message from claude", "message", message)
+	slog.Debug("claude usage", "usage", message.Usage)
+	slog.Debug("estimated cost", "cost", calculateCost(message.Usage))
 
 	for _, v := range message.Content {
 		if v.Type == "text" {
@@ -43,4 +44,12 @@ func (a *App) RunPrompt(page *ChronamPage) error {
 	}
 
 	return nil
+}
+
+// Price in dollars per token for Claude 3.5 Sonnet
+const inputPrice float64 = 3 / 1e6
+const outputPrice float64 = 15 / 1e6
+
+func calculateCost(u anthropic.Usage) float64 {
+	return float64(u.InputTokens)*inputPrice + float64(u.OutputTokens)*outputPrice
 }
