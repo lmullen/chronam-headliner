@@ -1,30 +1,46 @@
 package headliner
 
 import (
-	"fmt"
+	"encoding/json"
 	"log/slog"
 
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
-type ClaudeResponse []int
+// Generate the type for the expected response from Claude
+//go:generate go-jsonschema -p headliner -t --tags json ai-response-schema.json -o response.go
 
-func (a *App) RunPrompt() (ClaudeResponse, error) {
-	var res ClaudeResponse
+func (a *App) RunPrompt(page *ChronamPage) error {
+	slog.Debug("sending prompt to Claude", "chronam", page.URL)
+	prompt, err := a.MakePrompt(page.RawText)
+	if err != nil {
+		return err
+	}
 
-	slog.Debug("sending prompt to Claude")
 	message, err := a.AIClient.Messages.New(a.ShutdownCtx, anthropic.MessageNewParams{
 		Model:     anthropic.F(anthropic.ModelClaude3_5SonnetLatest),
-		MaxTokens: anthropic.F(int64(1024)),
+		MaxTokens: anthropic.F(int64(8192)),
+		System: anthropic.F([]anthropic.TextBlockParam{
+			anthropic.NewTextBlock(promptSystem),
+		}),
 		Messages: anthropic.F([]anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock("Give me a JSON array of the integers 1, 2, 3, 4, 5. Return only the JSON.")),
+			anthropic.NewUserMessage(anthropic.NewTextBlock(prompt)),
 		}),
 	})
 	if err != nil {
-		slog.Error("failed sending prompt to Claude", "error", err)
-		return nil, err
+		slog.Debug("error response from claude", "claude", message)
+		return err
 	}
-	fmt.Printf("%+v\n", message.Content)
+	slog.Debug("message from claude", "message", message)
 
-	return res, nil
+	for _, v := range message.Content {
+		if v.Type == "text" {
+			err = json.Unmarshal([]byte(v.Text), page)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

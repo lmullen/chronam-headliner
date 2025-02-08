@@ -1,14 +1,12 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Articles",
 	"type": "array",
 	"items": {
 		"type": "object",
-		"required": [ "headline", "body" ],
+		"required": [ "headline" ],
 		"properties": {
 			"headline": {
-				"type": [ "string", "null" ]
-			},
-			"body": {
 				"type": "string"
 			}
 		}

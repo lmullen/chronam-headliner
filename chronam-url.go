@@ -9,14 +9,9 @@ import (
 )
 
 type ChronamPage struct {
-	URL      string          `json:"url"`
-	RawText  string          `json:"raw_text"`
-	Articles ChronamArticles `json:"articles"`
-}
-
-type ChronamArticles []struct {
-	Headline string `json:"headline"`
-	Body     string `json:"body"`
+	URL      string   `json:"url"`
+	RawText  string   `json:"raw_text"`
+	Articles Articles `json:"articles"`
 }
 
 func (a *App) ChronamUrlHandler() http.HandlerFunc {
@@ -51,24 +46,10 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 			slog.Error("unable to download OCR text", "error", err, "url", page.URL)
 		}
 
-		a.RunPrompt()
-		// req, err := a.AIClient.ConstructAIRequest(&page)
-		// if err != nil {
-		// 	slog.Error("error contructing request for this page", "url", page.URL, "error", err)
-		// 	return
-		// }
-
-		// err = a.AIClient.RunPrompt(&page, req)
-		// if err != nil {
-		// 	slog.Error("error making request to model", "url", page.URL, "error", err)
-		// 	return
-		// }
-
-		// for i, art := range page.Articles {
-		// 	fmt.Println("Count: ", i)
-		// 	fmt.Println("Headline: ", art.Headline)
-		// 	// fmt.Println("Body: ", art.Body)
-		// }
+		err = a.RunPrompt(&page)
+		if err != nil {
+			slog.Error("error running prompt with Claude", "error", err)
+		}
 
 	}
 }

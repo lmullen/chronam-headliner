@@ -1,4 +1,4 @@
-You will be given the OCR text of a historical newspaper page from Chronicling America. The OCR quality is poor, and your task is to improve the readability of the text and split it into individual articles with their respective headlines. Here is the OCR text:
+You will be given the OCR text of a historical newspaper page from Chronicling America. The OCR quality is poor. Your task is to split it into individual articles with their respective headlines, and return the cleaned up headlines from the text. 
 
 <ocr_text>
 {{ .OCR }}
@@ -6,8 +6,15 @@ You will be given the OCR text of a historical newspaper page from Chronicling A
 
 Your task consists of two main parts:
 
-1. Improve the quality of the OCR text to make it more readable.
-2. Split the document into separate articles, identifying their headlines.
+1. Identify the headlines on the page.
+2. Improve the quality of the OCR text of those headlines it more readable.
+
+To split the document into articles and headlines:
+- Identify distinct articles within the text
+- Locate and extract the headline for each article
+- If an article doesn't have a clear headline, then you can skip it
+- Ensure that the body of each article contains all relevant text, excluding the headline
+
 
 To improve the OCR quality:
 - Correct obvious spelling mistakes and OCR errors
@@ -15,20 +22,12 @@ To improve the OCR quality:
 - Reconstruct partial words or phrases that may have been cut off or misinterpreted by the OCR process
 - Maintain the original meaning and content of the text as much as possible
 
-To split the document into articles and headlines:
-- Identify distinct articles within the text
-- Locate and extract the headline for each article
-- If an article doesn't have a clear headline, use "No Headline" as the value
-- Ensure that the body of each article contains all relevant text, excluding the headline
-
 Provide your output in valid JSON format. The correct JSON format is defined with this JSON schema:
 
 {{ .Schema }}
 
 Additional instructions:
-- Do not summarize or truncate the text of any articles. Return the entire article.
-- If you encounter any advertisements or non-article content, include them as separate entries in the JSON array but leave the headline as `null` if there is not one. Do not make up any headlines. 
-- If you come across any illegible or incomprehensible text that you cannot improve, include it as-is in the article body
-- If the OCR text is severely degraded and you cannot reconstruct a meaningful article, create an entry with the headline as `null` and include any partially legible text in the body
+- If you encounter any advertisements or non-article content, you can skip them.
+- Do not make up any headlines. 
 
 Remember to focus on improving readability and accurately splitting the content into articles while preserving the original meaning and structure of the newspaper page.
