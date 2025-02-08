@@ -1,7 +1,7 @@
 # Run the app
 .PHONY : run-app
 run-app : 
-	go run cmd/main.go
+	go run cmd/chronam-headliner/main.go
 
 # Send the app a test URL
 .PHONY : test-url
