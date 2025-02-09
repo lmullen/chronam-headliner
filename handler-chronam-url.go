@@ -48,6 +48,8 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 			err := GetRawText(&page)
 			if err != nil {
 				slog.Error("unable to download OCR text", "error", err, "url", page.URL)
+				http.Error(w, "Unable to process that page", http.StatusInternalServerError)
+				return
 			}
 
 			err = a.RunPrompt(&page)
@@ -56,6 +58,7 @@ func (a *App) ChronamUrlHandler() http.HandlerFunc {
 				http.Error(w, "Unable to process that page", http.StatusInternalServerError)
 				return
 			}
+
 			// Prompt was successful so store results in cache
 			a.Store.Store(page.URL, page)
 		} else {
