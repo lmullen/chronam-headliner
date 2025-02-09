@@ -31,8 +31,10 @@ func (a *App) RunPrompt(page *ChronamPage) error {
 		slog.Debug("error response from claude", "claude", message)
 		return err
 	}
-	slog.Debug("claude usage", "usage", message.Usage)
-	slog.Debug("estimated cost", "cost", calculateCost(message.Usage))
+	slog.Info("performed Claude query",
+		"cost", calculateCost(message.Usage),
+		"usage", message.Usage,
+		"url", page.URL)
 
 	for _, v := range message.Content {
 		if v.Type == "text" {

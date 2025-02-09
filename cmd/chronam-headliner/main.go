@@ -14,7 +14,7 @@ import (
 func main() {
 	// Initialize the logger
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: slog.LevelInfo,
 	}
 	handler := slog.NewJSONHandler(os.Stderr, opts)
 	logger := slog.New(handler)
